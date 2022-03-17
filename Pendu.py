@@ -1,6 +1,7 @@
 from tkinter import *
 from random import randint
 from formes import *
+from tkinter.colorchooser import askcolor
 
 class monBoutonLettre(Button):
     def __init__(self,parent,texte,traitement):
@@ -37,6 +38,9 @@ class ZoneAffichage(Canvas):
 
     def etatForme(self,i,state):
         self.__listeFormes[i-1].setState(state)
+
+    def changerFondCanva(self):
+        self.config(bg=askcolor()[1])
 
 
 
@@ -87,6 +91,21 @@ class FenPrincipale(Tk):
             else:
                 boutonLettre.grid(row=(i//7)+1,column=(i%7)+1,ipadx=8,padx=5,pady=3)
 
+        # Barre Menu
+        self.__menu=Menu(self)
+
+        # Menu Personnalisation
+        self.__ongletPerso=Menu(self.__menu,tearoff=0)
+        self.__ongletPerso.add_command(label="Modifier la couleur de fond",command=self.changerFond)
+        self.__ongletPerso.add_command(label="Modifier la couleur du canevas",command=self.__canva.changerFondCanva)
+        self.__menu.add_cascade(label="Personnalisation",menu=self.__ongletPerso)
+
+        #Bouton Undo
+        self.__menu.add_cascade(label="Retour",command=self.triche)
+
+
+        self.config(menu=self.__menu)
+
 
     # On récupère la liste des mots pour la nouvelle partie
     def chargeMots(self):
@@ -96,7 +115,6 @@ class FenPrincipale(Tk):
         f.close()
 
     def nouvellePartie(self):
-        #penser à clear le canva stp bg
         for i in range(10):
             self.__canva.etatForme(i+1,'hidden')
         # On dégrise toutes les lettres
@@ -107,6 +125,10 @@ class FenPrincipale(Tk):
         self.__motSecret=self.__mots[randint(0,len(self.__mots)-1)]
         self.__mot.set("Mot : "+'*'*len(self.__motSecret))
         self.__rates=0
+        self.__coups=[]
+        self.__perdu=''
+        self.__fini=False
+        self.__boutonsAllumes=[]
 
     def traitement(self,lettre):
         if lettre in self.__motSecret:
@@ -119,9 +141,13 @@ class FenPrincipale(Tk):
                 self.gagne()
         else:
             self.rate()
+        self.__coups.append(lettre)
 
     def gagne(self):
+        self.__fini=True
         for k in self.__clavierListe:
+            if k['state']=='normal':
+                self.__boutonsAllumes.append(k)
             k.config(state='disabled')
         mottemp=self.__mot.get()
         self.__mot.set("C'est gagné ! :) "+mottemp)
@@ -132,12 +158,42 @@ class FenPrincipale(Tk):
             self.perdu()
         self.__canva.etatForme(self.__rates,'normal')
 
-
     def perdu(self):
+        self.__fini=True
+        self.__perdu=self.__mot.get()
+        self.__boutonsAllumes=[]
         for k in self.__clavierListe:
+            if k['state']=='normal':
+                self.__boutonsAllumes.append(k)
             k.config(state='disabled')
         self.__mot.set("C'est perdu ! :( Mot : "+self.__motSecret)
 
+    def changerFond(self):
+        self.configure(bg=askcolor()[1])
+    
+    def triche(self):
+        lettre=self.__coups.pop()
+        for k in self.__clavierListe:# On dégrise la dernière case
+            if k['text']==lettre:
+                k.config(state='normal')
+        if lettre in self.__motSecret:# Si le dernier coup était un bon coup, on remet les *
+            mottemp=self.__mot.get()
+            actuel=mottemp[::-1][:len(self.__motSecret)][::-1]
+            for i in range(len(self.__motSecret)):
+                if self.__motSecret[i]==lettre:
+                    actuel=actuel[:i]+'*'+actuel[i+1:]
+            self.__mot.set("Mot : "+actuel)
+        else:# Si c'était un mauvais coup
+            if self.__fini:# Et que c'était fini, on remet le message tel quel
+                self.__mot.set(self.__perdu)
+            # Ensuite dans tous les cas, il faut retirer le dernier dessin et une erreur comptabilisée.
+            self.__canva.etatForme(self.__rates,'hidden')
+            self.__rates-=1
+
+        if self.__boutonsAllumes!=[]:# Si la partie était finie (gagnée/perdue), on remet les cases telles qu'elles étaient
+            for k in self.__boutonsAllumes:
+                k.config(state='normal')
+            self.__boutonsAllumes=[]
 
 
 if __name__=="__main__":
