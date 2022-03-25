@@ -23,19 +23,19 @@ class ZoneAffichage(Canvas):
 		self.__listeFormes=[]
 
 		# Base, Poteau, Traverse, Corde
-		self.__listeFormes.append(Rectangle(self, 50,  270, 200,  26, "brown", "hidden"))
-		self.__listeFormes.append(Rectangle(self, 87,   83,  26, 200, "brown", "hidden"))
-		self.__listeFormes.append(Rectangle(self, 87,   70, 150,  26, "brown", "hidden"))
-		self.__listeFormes.append(Rectangle(self, 183,  67,  10,  40, "brown", "hidden"))
+		self.__listeFormes.append(Rectangle(self, 50,  270, 200,  26, "#8000ff", "hidden"))
+		self.__listeFormes.append(Rectangle(self, 87,   83,  26, 200, "#8000ff", "hidden"))
+		self.__listeFormes.append(Rectangle(self, 87,   70, 150,  26, "#8000ff", "hidden"))
+		self.__listeFormes.append(Rectangle(self, 183,  67,  10,  40, "#8000ff", "hidden"))
 		# Tete, Tronc
-		self.__listeFormes.append(Rectangle(self, 188, 120,  20,  20, "black", "hidden"))
-		self.__listeFormes.append(Rectangle(self, 175, 143,  26,  60, "black", "hidden"))
+		self.__listeFormes.append(Rectangle(self, 188, 120,  20,  20, "#408080", "hidden"))
+		self.__listeFormes.append(Rectangle(self, 175, 143,  26,  60, "#408080", "hidden"))
 		# Bras gauche et droit
-		self.__listeFormes.append(Rectangle(self, 133, 150,  40,  10, "black", "hidden"))
-		self.__listeFormes.append(Rectangle(self, 203, 150,  40,  10, "black", "hidden"))
+		self.__listeFormes.append(Rectangle(self, 133, 150,  40,  10, "#408080", "hidden"))
+		self.__listeFormes.append(Rectangle(self, 203, 150,  40,  10, "#408080", "hidden"))
 		# Jambes gauche et droite
-		self.__listeFormes.append(Rectangle(self, 175, 205,  10,  40, "black", "hidden"))
-		self.__listeFormes.append(Rectangle(self, 191, 205,  10,  40, "black", "hidden"))
+		self.__listeFormes.append(Rectangle(self, 175, 205,  10,  40, "#408080", "hidden"))
+		self.__listeFormes.append(Rectangle(self, 191, 205,  10,  40, "#408080", "hidden"))
 
 
 
@@ -45,10 +45,22 @@ class ZoneAffichage(Canvas):
 	def changerFondCanva(self):
 		self.config(bg=askcolor()[1])
 
+	def changerCouleurPotence(self):
+		couleur=askcolor()[1]
+		print(couleur)
+		for i in range(4):
+			self.itemconfig(i+1,fill=couleur)
+
+	def changerCouleurPendu(self):
+		couleur=askcolor()[1]
+		print(couleur)
+		for i in range(4,10):
+			self.itemconfig(i+1,fill=couleur)
+
 class FenPrincipale(Tk):
 	def __init__(self):
 		Tk.__init__(self)
-		self.configure(bg="blue")
+		self.configure(bg="#808080")
 		self.title('Jeu du pendu')
 		self.geometry("600x600")
 		self.__joueur=None # Pour plus tard
@@ -57,16 +69,16 @@ class FenPrincipale(Tk):
 		self.__barreOutils=Frame(self)
 		self.__barreOutils.pack(side=TOP)
 
-		boutonNouvellePartie = Button(self.__barreOutils, text='Nouvelle partie')
-		boutonQuitter = Button(self.__barreOutils, text='Quitter')
-		boutonNouvellePartie.pack(side=LEFT, padx=5, pady=5)
-		boutonQuitter.pack(side=LEFT, padx=5, pady=5)
+		self.__boutonNouvellePartie = Button(self.__barreOutils, text='Nouvelle partie')
+		self.__boutonQuitter = Button(self.__barreOutils, text='Quitter')
+		self.__boutonNouvellePartie.pack(side=LEFT, padx=5, pady=5)
+		self.__boutonQuitter.pack(side=LEFT, padx=5, pady=5)
 
-		boutonQuitter.config(command=self.destroy)
-		boutonNouvellePartie.config(command=self.nouvellePartie)
+		self.__boutonQuitter.config(command=self.destroy)
+		self.__boutonNouvellePartie.config(command=self.nouvellePartie)
 
 		# Canevas
-		self.__canva=ZoneAffichage(self,400,300,"red")
+		self.__canva=ZoneAffichage(self,400,300,"#808040")
 		self.__canva.pack(side=TOP,padx=5,pady=5)
 
 
@@ -99,8 +111,19 @@ class FenPrincipale(Tk):
 
 		# Menu Personnalisation
 		self.__ongletPerso=Menu(self.__menu,tearoff=0)
-		self.__ongletPerso.add_command(label="Modifier la couleur de fond",command=self.changerFond)
+		self.__ongletPerso.add_command(label="Modifier la couleur du fond",command=self.changerFond)
+		self.__ongletPerso.add_separator()
+		self.__ongletPerso.add_command(label="Modifier la couleur du fond de la barre d'outils",command=self.changerFondBarre)
+		self.__ongletPerso.add_command(label="Modifier la couleur des boutons de la barre d'outils",command=self.changerCouleurBoutonsBarre)
+		self.__ongletPerso.add_separator()
 		self.__ongletPerso.add_command(label="Modifier la couleur du canevas",command=self.__canva.changerFondCanva)
+		self.__ongletPerso.add_command(label="Modifier la couleur de la potence",command=self.__canva.changerCouleurPotence)
+		self.__ongletPerso.add_command(label="Modifier la couleur du pendu",command=self.__canva.changerCouleurPendu)
+		self.__ongletPerso.add_separator()
+		self.__ongletPerso.add_command(label="Modifier la couleur du fond du texte",command=self.changerCouleurFondTexte)
+		self.__ongletPerso.add_separator()
+		self.__ongletPerso.add_command(label="Modifier la couleur des boutons du clavier",command=self.changerCouleurBoutonsClavier)
+		self.__ongletPerso.add_command(label="Modifier la couleur du fond du clavier",command=self.changerFondClavier)
 		self.__menu.add_cascade(label="Personnalisation",menu=self.__ongletPerso)
 
 		#Bouton Classement
@@ -195,6 +218,28 @@ class FenPrincipale(Tk):
 	# Custom bg
 	def changerFond(self):
 		self.configure(bg=askcolor()[1])
+
+	def changerFondClavier(self):
+		couleur=askcolor()[1]
+		self.__clavier.configure(bg=couleur)
+
+	def changerCouleurBoutonsClavier(self):
+		couleur=askcolor()[1]
+		for i in range(len(self.__clavierListe)):
+			self.__clavierListe[i].configure(bg=couleur)
+
+	def changerFondBarre(self):
+		couleur=askcolor()[1]
+		self.__barreOutils.configure(bg=couleur)
+
+	def changerCouleurBoutonsBarre(self):
+		couleur=askcolor()[1]
+		self.__boutonNouvellePartie.configure(bg=couleur)
+		self.__boutonQuitter.configure(bg=couleur)
+
+	def changerCouleurFondTexte(self):
+		couleur=askcolor()[1]
+		self.__texte.configure(bg=couleur)
 	
 	# Ex 8 : ajout Undo
 	def triche(self):
@@ -337,7 +382,7 @@ class JoueurDB:
 class FenStats(Tk):
 	def __init__(self,leaderboard_abs,leaderboard_rel):
 		Tk.__init__(self)
-		self.configure(bg="gray")
+		self.configure(bg="#C0C0C0")
 		self.title('Jeu du pendu')
 		self.geometry("600x450")
 
@@ -360,26 +405,26 @@ class FenStats(Tk):
 		self.__labelRelatif.pack(side=TOP)
 
 		# Classement basique
-		self.__gridBasique=ttk.Treeview(self.__top5Basique,columns=('pseudo','scoretotal','nbparties'))
-		self.__gridBasique.heading('pseudo', text='Pseudo')
-		self.__gridBasique.heading('scoretotal', text='Score Total')
-		self.__gridBasique.heading('nbparties', text='Nombre de parties jouées')
-		self.__gridBasique['show']='headings'# Cacher la première colonne de libellés
+		self.__tableauBasique=ttk.Treeview(self.__top5Basique,columns=('pseudo','scoretotal','nbparties'))
+		self.__tableauBasique.heading('pseudo', text='Pseudo')
+		self.__tableauBasique.heading('scoretotal', text='Score Total')
+		self.__tableauBasique.heading('nbparties', text='Nombre de parties jouées')
+		self.__tableauBasique['show']='headings'# Cacher la première colonne de libellés
 
 		# Classement relatif
-		self.__gridRelatif=ttk.Treeview(self.__top5Relatif,columns=('pseudo','scoremoyen'))
-		self.__gridRelatif.heading('pseudo', text='Pseudo')
-		self.__gridRelatif.heading('scoremoyen', text='Score moyen (Total / Parties)')
-		self.__gridRelatif['show']='headings'# Cacher la première colonne de libellés
+		self.__tableauRelatif=ttk.Treeview(self.__top5Relatif,columns=('pseudo','scoremoyen'))
+		self.__tableauRelatif.heading('pseudo', text='Pseudo')
+		self.__tableauRelatif.heading('scoremoyen', text='Score moyen (Total / Parties)')
+		self.__tableauRelatif['show']='headings'# Cacher la première colonne de libellés
 
 		# Remplissage du classement
 		for i in range(len(leaderboard_abs)):
-			self.__gridBasique.insert('','end',values=(leaderboard_abs[i][0],leaderboard_abs[i][1],leaderboard_abs[i][2]))
+			self.__tableauBasique.insert('','end',values=(leaderboard_abs[i][0],leaderboard_abs[i][1],leaderboard_abs[i][2]))
 		for i in range(len(leaderboard_rel)):
-			self.__gridRelatif.insert('','end',values=(leaderboard_rel[i][0],leaderboard_rel[i][1]/leaderboard_rel[i][2]))
+			self.__tableauRelatif.insert('','end',values=(leaderboard_rel[i][0],leaderboard_rel[i][1]/leaderboard_rel[i][2]))
 		
-		self.__gridBasique.pack()
-		self.__gridRelatif.pack()
+		self.__tableauBasique.pack()
+		self.__tableauRelatif.pack()
 
 	def changerFond(self):
 		self.configure(bg=askcolor()[1])
