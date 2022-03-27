@@ -1,10 +1,13 @@
 from tkinter import *
 from tkinter import ttk
 from random import randint
+from tkinter import messagebox
 from formes import *
 from tkinter.colorchooser import askcolor
 import sqlite3
-from tkinter import simpledialog# a voir
+from tkinter import simpledialog
+from recupskin import *
+from PIL import Image,ImageTk
 
 class monBoutonLettre(Button):
 	def __init__(self,parent,texte,traitement):
@@ -20,27 +23,29 @@ class monBoutonLettre(Button):
 class ZoneAffichage(Canvas):
 	def __init__(self, parent, largeur, hauteur, couleur):
 		Canvas.__init__(self, parent, width=largeur, height=hauteur, bg=couleur)
+
 		self.__listeFormes=[]
-
 		# Base, Poteau, Traverse, Corde
-		self.__listeFormes.append(Rectangle(self, 50,  270, 200,  26, "#8000ff", "hidden"))
-		self.__listeFormes.append(Rectangle(self, 87,   83,  26, 200, "#8000ff", "hidden"))
-		self.__listeFormes.append(Rectangle(self, 87,   70, 150,  26, "#8000ff", "hidden"))
-		self.__listeFormes.append(Rectangle(self, 183,  67,  10,  40, "#8000ff", "hidden"))
-		# Tete, Tronc
-		self.__listeFormes.append(Rectangle(self, 188, 120,  20,  20, "#408080", "hidden"))
-		self.__listeFormes.append(Rectangle(self, 175, 143,  26,  60, "#408080", "hidden"))
-		# Bras gauche et droit
-		self.__listeFormes.append(Rectangle(self, 133, 150,  40,  10, "#408080", "hidden"))
-		self.__listeFormes.append(Rectangle(self, 203, 150,  40,  10, "#408080", "hidden"))
-		# Jambes gauche et droite
-		self.__listeFormes.append(Rectangle(self, 175, 205,  10,  40, "#408080", "hidden"))
-		self.__listeFormes.append(Rectangle(self, 191, 205,  10,  40, "#408080", "hidden"))
+		self.__listeFormes.append(Rectangle(self, 50,  320, 275,  26, "#8000ff", "hidden"))
+		self.__listeFormes.append(Rectangle(self, 87,   83,  26, 250, "#8000ff", "hidden"))
+		self.__listeFormes.append(Rectangle(self, 87,   70, 220,  26, "#8000ff", "hidden"))
+		self.__listeFormes.append(Rectangle(self, 233,  67,  10,  40, "#8000ff", "hidden"))
+		
+		# Skin
+		self.__tailles={
+			'tete':((44,44),(216,120)),
+			'bg':((17,66),(196,166)),
+			'buste':((46,66),(215,166)),
+			'bd':((17,66),(263,166)),
+			'jg':((23,66),(214,234)),
+			'jd':((23,66),(239,234))}
+		self.changerSkin("FlavCraft0834")
 
+		for i in range(10):
+			self.etatForme(i+1,'normal')
 
-
-	def etatForme(self,i,state):
-		self.__listeFormes[i-1].setState(state)
+	def etatForme(self,i,etat):
+		self.itemconfig(i,state=etat)
 
 	def changerFondCanva(self):
 		self.config(bg=askcolor()[1])
@@ -51,11 +56,56 @@ class ZoneAffichage(Canvas):
 		for i in range(4):
 			self.itemconfig(i+1,fill=couleur)
 
-	def changerCouleurPendu(self):
-		couleur=askcolor()[1]
-		print(couleur)
-		for i in range(4,10):
-			self.itemconfig(i+1,fill=couleur)
+	def changerSkin(self,pseudo):
+		self.__skin=recupskin(pseudo)
+		if len(self.__listeFormes)==4:
+			self.__listeFormes=self.__listeFormes[:4].copy()
+
+			self.__teteTk=ImageTk.PhotoImage(Image.open(f"skin/part0.png").resize(self.__tailles['tete'][0]),master=self)
+			self.__tete=self.create_image(self.__tailles['tete'][1],anchor=NW,image=self.__teteTk, state="hidden")
+			self.__listeFormes.append(self.__tete)
+
+			self.__bgTk=ImageTk.PhotoImage(Image.open(f"skin/part1.png").resize(self.__tailles['bg'][0]),master=self)
+			self.__bg=self.create_image(self.__tailles['bg'][1],anchor=NW,image=self.__bgTk, state="hidden")
+			self.__listeFormes.append(self.__bg)
+
+			self.__busteTk=ImageTk.PhotoImage(Image.open(f"skin/part2.png").resize(self.__tailles['buste'][0]),master=self)
+			self.__buste=self.create_image(self.__tailles['buste'][1],anchor=NW,image=self.__busteTk, state="hidden")
+			self.__listeFormes.append(self.__buste)
+
+			self.__bdTk=ImageTk.PhotoImage(Image.open(f"skin/part3.png").resize(self.__tailles['bd'][0]),master=self)
+			self.__bd=self.create_image(self.__tailles['bd'][1],anchor=NW,image=self.__bdTk, state="hidden")
+			self.__listeFormes.append(self.__bd)
+
+			self.__jgTk=ImageTk.PhotoImage(Image.open(f"skin/part4.png").resize(self.__tailles['jg'][0]),master=self)
+			self.__jg=self.create_image(self.__tailles['jg'][1],anchor=NW,image=self.__jgTk, state="hidden")
+			self.__listeFormes.append(self.__jg)
+
+			self.__jdTk=ImageTk.PhotoImage(Image.open(f"skin/part5.png").resize(self.__tailles['jd'][0]),master=self)
+			self.__jd=self.create_image(self.__tailles['jd'][1],anchor=NW,image=self.__jdTk, state="hidden")
+			self.__listeFormes.append(self.__jd)
+
+		elif self.__skin:
+			self.__teteTk=ImageTk.PhotoImage(Image.open(f"skin/part0.png").resize(self.__tailles['tete'][0]),master=self)
+			self.itemconfig(self.__tete,image=self.__teteTk)
+
+			self.__bgTk=ImageTk.PhotoImage(Image.open(f"skin/part1.png").resize(self.__tailles['bg'][0]),master=self)
+			self.itemconfig(self.__bg,image=self.__bgTk)
+
+			self.__busteTk=ImageTk.PhotoImage(Image.open(f"skin/part2.png").resize(self.__tailles['buste'][0]),master=self)
+			self.itemconfig(self.__buste,image=self.__busteTk)
+
+			self.__bdTk=ImageTk.PhotoImage(Image.open(f"skin/part3.png").resize(self.__tailles['bd'][0]),master=self)
+			self.itemconfig(self.__bd,image=self.__bdTk)
+
+			self.__jgTk=ImageTk.PhotoImage(Image.open(f"skin/part4.png").resize(self.__tailles['jg'][0]),master=self)
+			self.itemconfig(self.__jg,image=self.__jgTk)
+
+			self.__jdTk=ImageTk.PhotoImage(Image.open(f"skin/part5.png").resize(self.__tailles['jd'][0]),master=self)
+			self.itemconfig(self.__jd,image=self.__jdTk)
+
+		else:
+			messagebox.showinfo(title="Information",message="Le pseudo indiqué n'est pas un pseudo associé à un compte Minecraft premium. Ainsi, le skin affiché restera inchangé.")
 
 class FenPrincipale(Tk):
 	def __init__(self):
@@ -78,10 +128,8 @@ class FenPrincipale(Tk):
 		self.__boutonNouvellePartie.config(command=self.nouvellePartie)
 
 		# Canevas
-		self.__canva=ZoneAffichage(self,400,300,"#808040")
+		self.__canva=ZoneAffichage(self,450,350,"#808040")
 		self.__canva.pack(side=TOP,padx=5,pady=5)
-
-
 
 		# Label : mot
 		self.__mot=StringVar()
@@ -118,7 +166,6 @@ class FenPrincipale(Tk):
 		self.__ongletPerso.add_separator()
 		self.__ongletPerso.add_command(label="Modifier la couleur du canevas",command=self.__canva.changerFondCanva)
 		self.__ongletPerso.add_command(label="Modifier la couleur de la potence",command=self.__canva.changerCouleurPotence)
-		self.__ongletPerso.add_command(label="Modifier la couleur du pendu",command=self.__canva.changerCouleurPendu)
 		self.__ongletPerso.add_separator()
 		self.__ongletPerso.add_command(label="Modifier la couleur du fond du texte",command=self.changerCouleurFondTexte)
 		self.__ongletPerso.add_separator()
@@ -138,7 +185,6 @@ class FenPrincipale(Tk):
 
 		# Connexion BDD
 		self.__bdd=JoueurDB('pendu.db')
-
 
 	# On récupère la liste des mots pour la nouvelle partie
 	def chargeMots(self):
@@ -215,7 +261,7 @@ class FenPrincipale(Tk):
 			k.config(state='disabled')
 		self.__mot.set("C'est perdu ! :( Mot : "+self.__motSecret)
 
-	# Custom bg
+	# Custom
 	def changerFond(self):
 		self.configure(bg=askcolor()[1])
 
@@ -261,7 +307,7 @@ class FenPrincipale(Tk):
 				self.__mot.set(self.__perdu)
 				self.__bdd.del_last()
 				self.__fini=False
-			# Ensuite dans tous les cas, il faut retirer le dernier dessin et une erreur comptabilisée.
+			# Dans tous les cas, il faut retirer le dernier dessin et une erreur comptabilisée.
 			self.__canva.etatForme(self.__rates,'hidden')
 			self.__rates-=1
 
@@ -286,13 +332,15 @@ class FenPrincipale(Tk):
 		while self.__joueur==None or self.__joueur=='':
 			self.__joueur=simpledialog.askstring("Choix joueur", "Quel est ton pseudo ?",parent=self)
 		self.__idjoueur=self.__bdd.ajouter_connecter_joueur(self.__joueur)
-
+		self.__canva.changerSkin(self.__joueur)
 
 class JoueurDB:
 	def __init__(self,nomDB):
 		self.__conn=sqlite3.connect(nomDB)
+
 	def __del__(self):
 		self.__conn.close()
+
 	def ajouter_connecter_joueur(self,pseudo):# Le joueur se connecte avec son pseudo, on recup ses ID
 		try:
 			assert type(pseudo)==str,'Le pseudo doit être une chaîne de caractères'
@@ -304,6 +352,7 @@ class JoueurDB:
 			self.__curseur.execute("INSERT INTO joueurs (pseudo) VALUES (?)",(pseudo,))
 			self.__conn.commit()
 			return self.__curseur.lastrowid
+
 	def save_game(self,idjoueur,mot,score):
 		try:
 			self.__curseur=self.__conn.cursor()
@@ -313,6 +362,7 @@ class JoueurDB:
 		except Exception as err:
 			print('err:', str(err))
 			print('type exception:', type(err).__name__)
+
 	def get_leaderboard_abs(self,joueur):
 		try:
 			self.__curseur=self.__conn.cursor()
@@ -378,7 +428,6 @@ class JoueurDB:
 			print('err:', str(err))
 			print('type exception:', type(err).__name__)
 
-
 class FenStats(Tk):
 	def __init__(self,leaderboard_abs,leaderboard_rel):
 		Tk.__init__(self)
@@ -391,12 +440,10 @@ class FenStats(Tk):
 		self.__menu.add_cascade(label="Modifier la couleur du fond",command=self.changerFond)
 		self.config(menu=self.__menu)
 
-		# Classements : un à gauche et un à droite, basique : score total et relatif : score / nb parties
+		# Classements : un en haut et un en bas, basique : score total et relatif : score / nb parties
 		self.__top5Basique=Frame(self)
 		self.__top5Relatif=Frame(self)
-		#self.__separateur=ttk.Separator(self,orient='horizontal')# vérif hor/ver (Orientation du séparateur ou du placement des éléments séparés ?)
 		self.__top5Basique.pack(side=TOP)
-		#self.__separateur.pack(side=LEFT,fill='x')
 		self.__top5Relatif.pack(side=TOP)
 
 		self.__labelBasique=Label(self.__top5Basique, text="Classement global (Top 5)")
@@ -415,7 +462,7 @@ class FenStats(Tk):
 		self.__tableauRelatif=ttk.Treeview(self.__top5Relatif,columns=('pseudo','scoremoyen'))
 		self.__tableauRelatif.heading('pseudo', text='Pseudo')
 		self.__tableauRelatif.heading('scoremoyen', text='Score moyen (Total / Parties)')
-		self.__tableauRelatif['show']='headings'# Cacher la première colonne de libellés
+		self.__tableauRelatif['show']='headings'
 
 		# Remplissage du classement
 		for i in range(len(leaderboard_abs)):
@@ -428,13 +475,6 @@ class FenStats(Tk):
 
 	def changerFond(self):
 		self.configure(bg=askcolor()[1])
-
-
-	# implémenter ctrl+Z ?
-
-	
-				
-
 
 if __name__=="__main__":
 	fen = FenPrincipale()
